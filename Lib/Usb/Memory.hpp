@@ -48,14 +48,14 @@ namespace Usb
         template <typename PacketType, int Size>
         struct Allocator
         {
-	        static int inUse;
+            static int inUse;
             using DataType = PacketType;
             using ImplType = typename PacketType::ImplType;
             static ImplType data_[Size];
             static Pointer<ImplType> free_;
             static DataType allocate()
             {
-	            inUse++;
+                inUse++;
                 auto n = free_->next_;
                 auto p = free_;
                 free_ = n;
@@ -66,7 +66,7 @@ namespace Usb
             }
             static void deallocate(DataType p)
             {
-	            inUse--;
+                inUse--;
                 p.setNext(free_);
                 free_ = p.unsafeToPacketPointer();
             }
@@ -76,11 +76,11 @@ namespace Usb
                 {
                     deallocate(DataType::unsafeFromBufPointer(d.buf_));
                 }
-	            inUse = 0;
+                inUse = 0;
             }
         };
-	    template <typename PacketType, int Size>
-		int Allocator<PacketType, Size>::inUse{0};
+        template <typename PacketType, int Size>
+        int Allocator<PacketType, Size>::inUse{0};
         template <typename PacketType, int Size>
         Pointer<typename Allocator<PacketType, Size>::ImplType> Allocator<PacketType, Size>::free_;
         template <typename PacketType, int Size>
@@ -151,20 +151,21 @@ namespace Usb
                     nextPointer->next_ = p.unsafeToPacketPointer();
                 }
             }
-			uint32_t size() {
-				if (packet_ == nullptr)
-				{
-					return 0;
-				}
-				auto cp = packet_;
-				uint32_t ret{};
-				while (cp->next_ != nullptr)
-				{
-					cp = cp->next_;
-					ret += PacketType::capacity;
-				}
-				return ret + cp->size_;
-			}
+            uint32_t size()
+            {
+                if (packet_ == nullptr)
+                {
+                    return 0;
+                }
+                auto cp = packet_;
+                uint32_t ret{};
+                while (cp->next_ != nullptr)
+                {
+                    cp = cp->next_;
+                    ret += PacketType::capacity;
+                }
+                return ret + cp->size_;
+            }
             TransferIterator begin() {}
             TransferIterator end() {}
             bool empty() { return packet_ == nullptr; }

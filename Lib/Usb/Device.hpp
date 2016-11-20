@@ -45,7 +45,6 @@ namespace Usb
             1     // bNumConfigurations
         };
 
-
     private:
         static void copyToTransfer(const uint8_t * const buf, const std::size_t length)
         {
@@ -197,7 +196,7 @@ namespace Usb
                     AllocatorType::deallocate(std::move(setupPacket_));
                 }
                 setupPacket_.unsafeFromPacketPointer(p.unsafeToPacketPointer());
-				transfer_.clear();
+                transfer_.clear();
             }
             auto getDirection() -> decltype(SetupPacket::getDirection(setupPacket_))
             {
@@ -263,7 +262,7 @@ namespace Usb
                 break;
             }
             };
-	        return false;
+            return false;
         }
         static bool handleDeviceToHost()
         {
@@ -294,11 +293,11 @@ namespace Usb
                 }
                 case Request::getConfiguration:
                 {
-					return Device::requestGetConfiguration();
+                    return Device::requestGetConfiguration();
                 }
                 case Request::getInterface:
                 {
-					return Device::requestGetInterface();
+                    return Device::requestGetInterface();
                 }
                 }
                 break;
@@ -324,29 +323,29 @@ namespace Usb
         {
             if (controlTransfer_.dataStageComplete())
             {
-	            if (handleHostToDevice())
-	            {
-		            sendControlAck(getPacket());
-	            }
-	            else
-	            {
-		            GetHal<Device, Tag::User>::type::enableEP0Out(false); // if control transfer not complete then next is data0
-	            }
+                if (handleHostToDevice())
+                {
+                    sendControlAck(getPacket());
+                }
+                else
+                {
+                    GetHal<Device, Tag::User>::type::enableEP0Out(
+                        false); // if control transfer not complete then next is data0
+                }
             }
             else
             {
-                GetHal<Device, Tag::User>::type::enableEP0Out(data1); // if control transfer not complete then alternate data0/1 packets
+                GetHal<Device, Tag::User>::type::enableEP0Out(
+                    data1); // if control transfer not complete then alternate data0/1 packets
             }
         }
 
     public:
-		static void sendPacket(PacketType && p)
-		{
-			GetHal<Device, Tag::User>::type::sendPacket(std::move(p));
-		}
-        static PacketType getPacket() { 
-	        return AllocatorType::allocate(); 
+        static void sendPacket(PacketType && p)
+        {
+            GetHal<Device, Tag::User>::type::sendPacket(std::move(p));
         }
+        static PacketType getPacket() { return AllocatorType::allocate(); }
         static void onSetupPacket(PacketType && p)
         {
             using namespace SetupPacket;
@@ -366,44 +365,50 @@ namespace Usb
         }
         static void onOutReceived(PacketType && p)
         {
-			if (p.getEndpoint().value_ == 0) {
-				bool wasData1 = p.isData1();
-				controlTransfer_.pushPacket(std::move(p));
-				onPacketFromHost(!wasData1);
-			}
-			else {
-				brigand::at<DeviceClasses, brigand::int8_t<0>>::onOut(std::move(p));
-			}
+            if (p.getEndpoint().value_ == 0)
+            {
+                bool wasData1 = p.isData1();
+                controlTransfer_.pushPacket(std::move(p));
+                onPacketFromHost(!wasData1);
+            }
+            else
+            {
+                brigand::at<DeviceClasses, brigand::int8_t<0>>::onOut(std::move(p));
+            }
         }
         static void onInSent(PacketType && p)
         {
             using namespace SetupPacket;
-			if (p.getEndpoint().value_ == 1) {
-				if (p.getSize() < PacketType::capacity)
-				{ // if the packet is smaller than the capacity it is by definition the last packet
-					// in the transfer
-					switch (controlTransfer_.getRequest())
-					{
-					case Request::setAddress:
-						GetHal<Device, Tag::User>::type::setAddress(static_cast<uint8_t>(controlTransfer_.getValue()));
-						break;
-					}
-					GetHal<Device, Tag::User>::type::enableEP0Out(false);
-				}
-				else
-				{
-					sendPacket(controlTransfer_.popPacket());
-				}
-				AllocatorType::deallocate(std::move(p));
-			}
-			else {
-				brigand::at<DeviceClasses, brigand::int8_t<0>>::onIn(std::move(p));
-			}
+            if (p.getEndpoint().value_ == 1)
+            {
+                if (p.getSize() < PacketType::capacity)
+                { // if the packet is smaller than the capacity it is by definition the last packet
+                    // in the transfer
+                    switch (controlTransfer_.getRequest())
+                    {
+                    case Request::setAddress:
+                        GetHal<Device, Tag::User>::type::setAddress(
+                            static_cast<uint8_t>(controlTransfer_.getValue()));
+                        break;
+                    }
+                    GetHal<Device, Tag::User>::type::enableEP0Out(false);
+                }
+                else
+                {
+                    sendPacket(controlTransfer_.popPacket());
+                }
+                AllocatorType::deallocate(std::move(p));
+            }
+            else
+            {
+                brigand::at<DeviceClasses, brigand::int8_t<0>>::onIn(std::move(p));
+            }
         }
-		static void onSof() {
-			//TODO support multiple devices here
-			brigand::at<DeviceClasses, brigand::int8_t<0>>::onSof();
-		}
+        static void onSof()
+        {
+            // TODO support multiple devices here
+            brigand::at<DeviceClasses, brigand::int8_t<0>>::onSof();
+        }
         static void initialize() { AllocatorType::initialize(); }
     };
     template <typename TDeviceSettings, typename... TDeviceClass>
