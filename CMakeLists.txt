@@ -55,6 +55,7 @@ set(TestFiles
     )
 
 add_executable(KvasirTest ${TestFiles})
+target_link_libraries(KvasirTest Kvasir)
 
 add_test(Kvasir KvasirTest)
 
