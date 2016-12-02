@@ -45,4 +45,4 @@ before_script:
 
 script:
   - make VERBOSE=1
-  - ./KvasirTest
+  - make test
