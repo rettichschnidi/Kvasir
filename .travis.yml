@@ -16,7 +16,7 @@ matrix:
       addons:
         apt:
           sources: ['ubuntu-toolchain-r-test']
-          packages: ['g++-4.9', 'cmake']
+          packages: ['g++-4.9']
       env: TOOLSET=g++-4.9
 
     - os: linux
@@ -35,7 +35,7 @@ before_script:
 
 # Prepare build
 before_script:
-  - export PATH="${PATH}:${PWD}/cmake-3.7.1-Linux-x86_64/bin"
+  - export PATH="${PWD}/cmake-3.7.1-Linux-x86_64/bin:${PATH}"
   - mkdir build
   - cd build
   - cmake .. -DCMAKE_CXX_COMPILER=$TOOLSET
